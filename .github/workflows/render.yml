@@ -1,0 +1,46 @@
+name: Render Moon Mystery Animation
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Animation Renderer
+        run: |
+          python render_animation.py
+
+      - name: Verify Video Output Exists
+        run: |
+          if [ ! -f "moon_mystery.mp4" ]; then
+            echo "Error: Video output file was not generated!"
+            exit 1
+          fi
+          echo "Success: moon_mystery.mp4 generated."
+
+      - name: Upload Video Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: moon-mystery-video-720p
+          path: moon_mystery.mp4
+          retention-days: 14
